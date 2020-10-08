@@ -21,7 +21,6 @@ setuptools.setup(
 		'Operating System :: OS Independent',
 		'Topic :: Scientific/Engineering'
 				],
-	install_requires=['numpy>=1.14.0', 'pandas>=0.24.0', 'scipy>=1.0.0', 
-					  'scikit-learn==0.21.0'],
+	install_requires=['numpy', 'pandas', 'scipy', 'scikit-learn'],
 	python_requires='>=3'
 		)
