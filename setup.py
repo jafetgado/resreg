@@ -5,7 +5,7 @@ with open('README.rst', 'r') as f:
 
 setuptools.setup(
 	name='resreg',
-	version='0.1',
+	version='0.2',
 	author='Japheth Gado',
 	author_email='japhethgado@gmail.com',
 	description='Resampling strategies for regression',
