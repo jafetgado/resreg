@@ -1,6 +1,8 @@
 """
-resreg: Resampling strategies for regression
+resreg: Resampling strategies for regression in Python
 """
+
+
 
 
 
@@ -11,12 +13,12 @@ resreg: Resampling strategies for regression
 
 import numpy as np
 import pandas as pd
+import copy
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
 from sklearn.neighbors import KernelDensity
 from sklearn import metrics
 from sklearn.tree import DecisionTreeRegressor
-import copy
 
 
 
@@ -49,11 +51,11 @@ def sigmoid_relevance(y, cl, ch):
     y : array_like
         The target values to be mapped to relevance values
     cl : float
-        Center of sigmoid for lower extreme. Values less than cl have relevance values 
-        greater than 0.5. If only higher extremes are relevant, set cl=None. 
+        Center of sigmoid for lower extreme. Values less than cl will have relevance 
+        values greater than 0.5. If only higher extremes are relevant, set cl=None. 
     ch : float
-        Center of sigmoid for higher extreme. Values greater than ch have relevance values 
-        greater than 0.5. If only lower extremes are relevant, set ch=None
+        Center of sigmoid for higher extreme. Values greater than ch will have relevance 
+        values greater than 0.5. If only lower extremes are relevant, set ch=None.
     
     Returns
     ----------
@@ -85,6 +87,7 @@ def pdf_relevance(y, bandwidth=1.0):
     Map an array (y) to relevance values (0 to 1) by taking the inverse of the
     probability density function (PDF). A kernel PDF is fitted to the target values using 
     sklearn.neighbors.KernelDensity, and then the inverse is normalized to a range of 0-1.
+    This method may be slow for large datasets.
     
     Parameters
     -----------
@@ -138,6 +141,7 @@ def bin_split(y, bins):
         
     Example
     --------
+    >>> X = np.random.uniform(0, 1, size=(100,10))
     >>> y = np.random.uniform(0, 1, size=100)
     >>> bin_indices, bin_freqs = bin_split(y, bins=[0.2, 0.5, 0.6, 0.8])
     >>> for bin_index in bin_indices:
@@ -186,7 +190,7 @@ def uniform_test_split(X, y, bins, bin_test_size=0.5, verbose=False, random_stat
     
     Parameters
     -----------
-    X : array-like or sparse matrix 
+    X : array-like or matrix 
         Features of the data with shape (n_samples, n_features)
     y : array-like
         The target values
@@ -212,7 +216,7 @@ def uniform_test_split(X, y, bins, bin_test_size=0.5, verbose=False, random_stat
     Example
     ---------
     >>> [train_indices, test_indices] = uniform_test_split(X, y, bins=[20, 40, 55, 87],
-    ...                                         bin_test_size=0.5)
+    ...                                         bin_test_size=0.4)
     >>> X_train, y_train = X[:,train_indices], y[train_indices]
     >>> X_test, y_test = X[:,test_indices], y[test_indices]
     
@@ -1082,6 +1086,7 @@ def random_undersample(X, y, relevance, relevance_threshold=0.5, under='balance'
 
     # Determine size of normal domain after undersampling
     if type(under)==float:
+        assert 0 < under < 1, "under must be between 0 and 1"
         new_norm_size = int((1 - under) * len(y_norm))
     elif under=='balance':
        new_norm_size = int(len(y_rare))
@@ -1162,6 +1167,7 @@ def random_oversample(X, y, relevance, relevance_threshold=0.5, over='balance',
     
     # Determine size of rare domain after oversampling
     if type(over)==float:
+        assert over >=0 , "over must be non-negative"
         new_rare_size = int((1 + over) * len(y_rare))
     elif over=='balance':
        new_rare_size = len(y_norm)
@@ -1252,6 +1258,7 @@ def smoter(X, y, relevance, relevance_threshold=0.5, k=5, over='balance', under=
     if type(over)==float:
         assert type(under)==float, 'under must also be a float if over is a float'
         assert 0 <= under <= 1, 'under must be between 0 and 1'
+        assert over >=0 , "over must be non-negative"
         new_rare_size = int((1 + over) * rare_size)
         new_norm_size = int((1 - under) * norm_size)
     elif over=='balance':
@@ -1308,7 +1315,7 @@ def smoter(X, y, relevance, relevance_threshold=0.5, k=5, over='balance', under=
 
 
 
-def gaussian_noise(X, y, relevance, relevance_threshold=0.5, delta=0.1, over=None, under=None,
+def gaussian_noise(X, y, relevance, relevance_threshold=0.5, delta=0.05, over=None, under=None,
                    nominal=None, random_state=None):
     """
     Resample imbalanced dataset by introduction of Gaussian noise. The dataset is split 
@@ -1330,7 +1337,7 @@ def gaussian_noise(X, y, relevance, relevance_threshold=0.5, delta=0.1, over=Non
         relevance less than relevance_threshold form the normal domain, while target 
         values with relevance greater than or equal to relevance_threshold form the rare
         domain.
-    delta : float (default=0.1)
+    delta : float (default=0.05)
         Value that determines the magnitude of Gaussian noise added
     over : float or str, {'balance' | 'medium' | 'extreme'} (default='balance')
         Value that determines the amount of oversampling. If float, over is the fraction
@@ -1376,6 +1383,7 @@ def gaussian_noise(X, y, relevance, relevance_threshold=0.5, delta=0.1, over=Non
     if type(over)==float:
         assert type(under)==float, 'under must be a float if over is a float'
         assert 0 <= under <= 1, 'under must be between 0 and 1'
+        assert over >=0 , "over must be non-negative"
         new_rare_size = int((1 + over) * rare_size)
         new_norm_size = int((1 - under) * norm_size)
     elif over=='balance':
@@ -1434,7 +1442,7 @@ def gaussian_noise(X, y, relevance, relevance_threshold=0.5, delta=0.1, over=Non
 
 
 
-def wercs(X, y, relevance, over=0.5, under=0.5, noise=False, delta=0.1, nominal=None,
+def wercs(X, y, relevance, over=0.5, under=0.5, noise=False, delta=0.05, nominal=None,
           random_state=None):
     """
     Resample imbalanced dataset with the WERCS algorithm. The relevance values are used
@@ -1456,7 +1464,7 @@ def wercs(X, y, relevance, over=0.5, under=0.5, noise=False, delta=0.1, nominal=
         Fraction of samples removed in undersampling.
     noise : bool
         Whether to add Gaussian noise to samples selected for oversampling (wercs-gn).
-    delta : float (default=0.1)
+    delta : float (default=0.05)
         Value that determines the magnitude of Gaussian noise added.
     nominal : ndarray (default=None)
         Column indices of nominal features. If None, then all features are continuous.
@@ -1664,7 +1672,7 @@ class Rebagg():
                 s_rare = int(size/2)
                 s_norm = size - s_rare
             elif size_method=='variation':
-                p = np.random.choice([1/3, 2/5, 1/2, 2/5, 2/3])
+                p = np.random.choice([1/3, 2/5, 1/2, 3/5, 2/3])
                 s_rare = int(size * p)
                 s_norm = int(size - s_rare)
             else:
@@ -1831,8 +1839,8 @@ class Rebagg():
         
         Examples
         ----------
-        y_pred = rebagg.predict(X_test)
-        pred_std = rebagg.pred_std  # Standard deviation of predictions
+        >>> y_pred = rebagg.predict(X_test)
+        >>> pred_std = rebagg.pred_std  # Standard deviation of predictions
         """
         if not self._isfitted:
             raise ValueError('Rebagg ensemble has not yet been fitted to training data.')

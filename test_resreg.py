@@ -9,7 +9,7 @@ import copy
 from sklearn.neighbors import KNeighborsRegressor
 
 import sys
-sys.path.insert(1, '..')
+sys.path.insert(1, '../../resreg/')
 import resreg
 
 
@@ -619,10 +619,10 @@ class RebaggTests():
                     random_state=0)
         y_pred5 = rebagg3.predict(X)
         
-        assert round(np.sum(y_pred1), 3) == -7.649
+        assert round(np.sum(y_pred1), 3) == -7.060
         assert round(np.sum(y_pred2), 3) == -25.532
-        assert round(np.sum(y_pred3), 3) == 4.556
-        assert round(np.sum(y_pred4), 3) == 7.869
-        assert round(np.sum(y_pred5), 3) == 13.195
+        assert round(np.sum(y_pred3), 3) == 3.388
+        assert round(np.sum(y_pred4), 3) == 8.213
+        assert round(np.sum(y_pred5), 3) == 12.123
         
 #========================================================================================#
