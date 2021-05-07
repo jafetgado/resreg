@@ -9,7 +9,7 @@ import copy
 from sklearn.neighbors import KNeighborsRegressor
 
 import sys
-sys.path.insert(1, '../../resreg/')
+sys.path.insert(1, '../resreg/')
 import resreg
 
 

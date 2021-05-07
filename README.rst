@@ -73,14 +73,16 @@ Examples
     from sklearn.metrics import RandomForestRegressor
 
     # Split dataset to training and testing sets
-    X_train, X_test, y_train, y_test = resreg.train_test_split(X, y, test_size=0.25)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
-    # Resample training set with random oversampling
+    # Resample training set with random oversampling such that values above the
+    # the 90th percentile are equal size with other values (balance)
     relevance = resreg.sigmoid_relevance(y, cl=None, ch=np.percentile(y, 90))
-    X_train, y_train = resreg.random_oversampling(X_train, y_train, relevance, relevance_threshold=0.5,
-                                                  over='balance')
+    X_train_res, y_train_res = resreg.random_oversampling(X_train, y_train, relevance,
+                                                          relevance_threshold=0.5,
+                                                          over='balance')
 
     # Fit regressor to resampled training set
     reg = RandomForestRegressor()
-    reg.fit(X_train, y_train)
-    y_pred = reg.predict(X_train, y_train)
+    reg.fit(X_train_res, y_train_res)
+    y_pred = reg.predict(X_test, y_test)

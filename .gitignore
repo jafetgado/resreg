@@ -4,3 +4,5 @@ build/
 *.pyc
 .DS_Store
 __pycache__/
+resreg/__pycache__/
+test/__pycache__/
